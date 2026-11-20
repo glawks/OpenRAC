@@ -1,0 +1,60 @@
+# Windows RAC2 build and focused cursor regression test, isolated from
+# OpenRAC's official launcher and release workflows.
+name: RAC2 cursor menu experiment
+
+on:
+  push:
+    branches: [cursor-menu-dev]
+    paths:
+      - "port/**"
+      - ".github/workflows/rac2-cursor-menu.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    name: Cursor policy (no game assets)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compile focused cursor regression test
+        run: |
+          c++ -std=c++20 -Iport -Iport/tests port/tests/cursor_visibility_test.cpp -o /tmp/cursor_visibility_test
+          /tmp/cursor_visibility_test
+
+  windows-rac2:
+    name: Windows RAC2 game build
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/decomp-sources
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/clang-windows
+      - name: Build RAC2 NTSC and cursor regression test
+        env:
+          OPENRAC_BUILD_JOBS: all
+        run: python tools/build_port.py rac2-ntsc --target cursor_visibility_test
+      - name: Test cursor visibility policy
+        run: ctest --test-dir port/build/release -R "^cursor_visibility$" --output-on-failure
+      - name: Package isolated test executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path test-artifact | Out-Null
+          Copy-Item port/build/release/openrac-rac2-ntsc.exe test-artifact/
+          Get-ChildItem port/build/release -Filter "*.dll" | Copy-Item -Destination test-artifact/
+          "Experimental OpenRAC RAC2 NTSC executable. Run with your already-extracted game data and existing mods. Do not replace your official launcher." | Out-File test-artifact/README.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: openrac-rac2-ntsc-cursor-experiment
+          path: test-artifact/
+          if-no-files-found: error

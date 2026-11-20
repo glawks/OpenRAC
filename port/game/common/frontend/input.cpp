@@ -24,6 +24,7 @@
 #include "debug_overlay.h"
 #include "frontend.h"
 #include "game/common/frontend/camera_latch.h"
+#include "game/common/frontend/cursor_visibility.h"
 #include "game/common/frontend/geometry.h"
 #include "game/common/frontend/state.h"
 #include "game/common/frontend/touch_controls.h"
@@ -104,9 +105,12 @@ void apply_mouse_capture() {
         SDL_SetWindowRelativeMouseMode(w, capture);
     }
     g->input.set_captured(capture);
-    // The pointer only where one of the overlay's windows uses it, hidden over the game. (A
-    // captured mouse hides it anyway; let go, SDL shows it as set here.)
-    const bool pointer = debug_overlay::wants_cursor();
+    // A mod that owns mouse input needs a visible system pointer when it
+    // releases relative capture for menus. Preserve the old hidden cursor
+    // for games without a mouse mod and whenever relative capture is active.
+    // The port's own overlay continues to take priority.
+    const bool pointer =
+        cursor_visible(debug_overlay::wants_cursor(), g->mouse_taken, capture, focused);
     if (SDL_CursorVisible() != pointer) {
         pointer ? SDL_ShowCursor() : SDL_HideCursor();
     }
@@ -162,6 +166,12 @@ void take_keyboard() {
     if (g) {
         g->keyboard_taken = true;
         g->input.set_keyboard_table(false);
+    }
+}
+
+void take_mouse() {
+    if (g) {
+        g->mouse_taken = true;
     }
 }
 

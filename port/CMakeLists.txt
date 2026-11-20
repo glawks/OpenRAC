@@ -193,6 +193,9 @@ openrac_add_test(pause_options INCLUDES .)
 openrac_add_test(exit_words INCLUDES .)
 # How wide a mod's page of the game's widgets is drawn (game/common/menu_fit.h).
 openrac_add_test(menu_fit INCLUDES .)
+# The OS cursor is shown when a mod takes mouse input and releases capture,
+# without changing the cursor of games with no mouse mod.
+openrac_add_test(cursor_visibility INCLUDES .)
 # Which undrawn ticks keep the window's last picture (game/common/program/undrawn_ticks.h).
 openrac_add_test(undrawn_ticks INCLUDES .)
 # The mobys' colour passes and their depth writes (scene/moby_passes.h).

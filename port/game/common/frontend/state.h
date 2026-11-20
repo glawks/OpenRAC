@@ -237,6 +237,7 @@ struct State {
     controls::Store controls;     // the player's controls files, applied to `input`
     bool capture_wanted = false;  // a mod's asking (capture_mouse)
     bool keyboard_taken = false;  // a mod took the keyboard (take_keyboard)
+    bool mouse_taken = false;     // a mod took the mouse (take_mouse), wants cursor in menus
     std::unique_ptr<renderer::Renderer> renderer;
     renderer::DirectRenderer* hud =
         nullptr;  // Owned by renderer; consumes uploads on skipped ticks.

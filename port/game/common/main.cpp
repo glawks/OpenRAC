@@ -362,12 +362,16 @@ const openrac_input* mod_input() {
 #ifdef OPENRAC_FRONTEND
 // What mods loaded before the window asked of its keyboard and cursor (load_mods).
 bool g_early_keyboard = false;
+bool g_early_mouse = false;
 std::optional<bool> g_early_capture;
 
 // Gives the window what the mods loaded before it asked for.
 void apply_early_mod_input() {
     if (g_early_keyboard) {
         frontend::take_keyboard();
+    }
+    if (g_early_mouse) {
+        frontend::take_mouse();
     }
     if (g_early_capture) {
         frontend::capture_mouse(*g_early_capture);
@@ -469,6 +473,13 @@ void load_mods() {
                 frontend::take_keyboard();
             } else {
                 g_early_keyboard = true;
+            }
+        }
+        if ((devices & OPENRAC_INPUT_MOUSE) != 0) {
+            if (g_window) {
+                frontend::take_mouse();
+            } else {
+                g_early_mouse = true;
             }
         }
     };

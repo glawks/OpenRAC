@@ -238,6 +238,8 @@ KeyboardMouseView keyboard_mouse();
 
 // A mod took the keyboard: the port's own keyboard table stops pressing pad 0's buttons.
 void take_keyboard();
+// A mod took the mouse: show the system cursor while it is uncaptured.
+void take_mouse();
 
 // Reads the player's controls of `game` ("rac1") from `dir` (controls_store.h) and presses the pads
 // from them, from the next read on; the controller mappings in `dir`'s gamecontrollerdb.txt, if
